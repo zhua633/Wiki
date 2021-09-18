@@ -9,10 +9,8 @@
 
     <ul>
         {% for entry in entries %}
-            <li>{{ entry }}</li>
+            <li><a href="{% url 'item' entry%}"> {{entry}}</a></li>
         {% endfor %}
     </ul>
 
 {% endblock %}
-
-"{% url 'tasks:add' %}"
