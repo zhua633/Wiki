@@ -18,8 +18,15 @@ New Page
 
     <form action="{% url 'NewPage' %}" method="POST">
         {% csrf_token %}
-        {{ form }}
+        <p>Title:</p>
+        {{ form.title }}
+        <br>
+        <p>Content:</p>
+        {{ form.content }}
+        <br>
         <input type="submit">
     </form>
+    
+
     
 {% endblock %}
