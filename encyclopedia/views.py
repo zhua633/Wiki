@@ -1,17 +1,15 @@
+from django.forms import TextInput,Textarea
 from django.shortcuts import render
 from markdown2 import Markdown
 from . import util
 from random import randint
 from django import forms
-from django.urls import reverse
-from django.http import HttpResponseRedirect
 from django.contrib import messages
 
-
-
 class NewPageForm(forms.Form):
-    title = forms.CharField(label="Title")
-    content = forms.CharField(label="Content")
+    title = forms.CharField(widget=forms.TextInput(attrs={'size':'110'}))
+    content = forms.CharField(widget=forms.Textarea())
+
 
 def NewPage(request):
     if request.method == "POST":
@@ -44,7 +42,37 @@ def NewPage(request):
             return render(request,"encyclopedia/NewPage.html", {"form": form})
     return render(request, "encyclopedia/NewPage.html", {"form": NewPageForm()})
 
+def EditPage(request,entry):
+    form = NewPageForm()
+    content=util.get_entry(entry)
+    title=entry
+    form.fields["title"].initial=title
+    form.fields["content"].initial=content.replace(("# "+title),"")
 
+    if request.method == "POST":
+        form = NewPageForm(request.POST)
+
+        if form.is_valid():
+            title= form.cleaned_data["title"]
+            content= form.cleaned_data["content"]
+
+            with open(f"entries/{title}.md", "w") as file:
+                hash="# "+title
+                file.write(hash)
+                file.write("\n")
+                file.write(content)
+
+
+            format = util.get_entry(title)
+            return render(request,"encyclopedia/item.html",
+                {"title":title, "entry": Markdown().convert(format)}
+            )
+        else:
+            return render(request,"encyclopedia/EditPage.html", {"form": form})
+
+    return render(request, "encyclopedia/EditPage.html", {
+        "title":title,
+        "form": form})
 
 
 def index(request):
@@ -54,6 +82,7 @@ def index(request):
 
 def NoEntry(request):
     return render(request, "encyclopedia/NoEntry.html")
+    
 
 def item(request, entry):
     content = util.get_entry(entry)
@@ -90,4 +119,3 @@ def RandomPage(request):
         {"title":entry, "entry": Markdown().convert(util.get_entry(entry))}
     )
             
-    
